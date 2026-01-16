@@ -83,11 +83,11 @@ function App() {
       </header>
 
       {/* Main Content - Split View */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 h-[calc(100vh-64px)] md:h-auto overflow-hidden md:overflow-visible">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-[calc(100vh-64px)] md:h-[calc(100vh-64px)] md:overflow-hidden">
 
         {/* Left Sidebar: Trend List */}
         <div className={`
-            md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm h-full
+            md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm md:h-full
             ${showMobileDetail ? 'hidden md:flex' : 'flex'}
         `}>
           <div className="p-4 border-b border-neutral-800 bg-neutral-900/50">
@@ -96,7 +96,7 @@ function App() {
             </h2>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+          <div className="flex-1 md:overflow-y-auto p-4 space-y-3 custom-scrollbar">
             {loading ? (
               <div className="flex justify-center py-20">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
