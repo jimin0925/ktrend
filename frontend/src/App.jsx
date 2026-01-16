@@ -12,6 +12,14 @@ function App() {
   /* State for Mobile View Navigation */
   const [showMobileDetail, setShowMobileDetail] = useState(false)
 
+  const categories = [
+    { id: "all", label: "통합" },
+    { id: "Fashion", label: "패션" },
+    { id: "Digital", label: "디지털" },
+    { id: "Food", label: "식품" },
+    { id: "Living", label: "생활" }
+  ]
+
   const fetchTrends = async (category) => {
     setLoading(true)
     try {
