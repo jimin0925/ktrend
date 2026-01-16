@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
+import { RefreshCw } from 'lucide-react'
 import TrendCard from './components/TrendCard'
 import TrendDetailView from './components/TrendDetailView'
 
 function App() {
   const [trends, setTrends] = useState([])
   const [loading, setLoading] = useState(false)
+  const [updating, setUpdating] = useState(false)
   const [selectedTrend, setSelectedTrend] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState("all")
 
@@ -41,6 +43,22 @@ function App() {
       setTrends([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleManualUpdate = async () => {
+    if (updating) return;
+    setUpdating(true);
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      await axios.get(`${apiUrl}/api/manual-update`);
+      alert("데이터가 최신 상태로 업데이트되었습니다!");
+      fetchTrends(selectedCategory); // Refresh the list
+    } catch (e) {
+      console.error(e);
+      alert("업데이트 요청 실패");
+    } finally {
+      setUpdating(false);
     }
   }
 
@@ -90,10 +108,18 @@ function App() {
             md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm md:h-full
             ${showMobileDetail ? 'hidden md:flex' : 'flex'}
         `}>
-          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50">
+          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50 flex justify-between items-center">
             <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
               {categories.find(c => c.id === selectedCategory)?.label} 트렌드 순위
             </h2>
+            <button
+              onClick={handleManualUpdate}
+              disabled={updating}
+              className={`p-1.5 rounded-lg hover:bg-neutral-800 text-gray-400 transition-colors ${updating ? 'animate-spin text-indigo-500' : ''}`}
+              title="데이터 즉시 업데이트"
+            >
+              <RefreshCw size={16} />
+            </button>
           </div>
 
           <div className="flex-1 md:overflow-y-auto p-4 space-y-3 custom-scrollbar">
