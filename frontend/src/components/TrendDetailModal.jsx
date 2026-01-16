@@ -19,7 +19,8 @@ const TrendDetailModal = ({ isOpen, onClose, trend }) => {
             setChartPeriod('1mo');
 
             // Fetch analysis from backend (includes initial 1mo data)
-            fetch(`http://localhost:8000/api/analyze/${encodeURIComponent(trend.keyword)}`)
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            fetch(`${apiUrl}/api/analyze/${encodeURIComponent(trend.keyword)}`)
                 .then(res => res.json())
                 .then(data => {
                     setAnalysis(data);
@@ -39,7 +40,8 @@ const TrendDetailModal = ({ isOpen, onClose, trend }) => {
         setChartPeriod(period);
         setChartLoading(true);
 
-        fetch(`http://localhost:8000/api/trend-data/${encodeURIComponent(trend.keyword)}?period=${period}`)
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        fetch(`${apiUrl}/api/trend-data/${encodeURIComponent(trend.keyword)}?period=${period}`)
             .then(res => res.json())
             .then(data => {
                 setChartData(data.chart_data || []);

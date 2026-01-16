@@ -12,7 +12,8 @@ function App() {
   const fetchTrends = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/trends');
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await axios.get(`${apiUrl}/api/trends`);
       setTrends(response.data.trends);
     } catch (error) {
       console.error("Failed to fetch trends", error);

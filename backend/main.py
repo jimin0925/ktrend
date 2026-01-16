@@ -19,11 +19,12 @@ analyzer = TrendAnalyzer()
 origins = [
     "http://localhost:5173", # Vite default
     "http://localhost:3000",
+    "*" # Allow all for Vercel/Production for now (or add specific Vercel domains later)
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"], # Allow all origins effectively
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
