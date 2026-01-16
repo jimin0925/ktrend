@@ -90,18 +90,10 @@ function App() {
             md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm md:h-full
             ${showMobileDetail ? 'hidden md:flex' : 'flex'}
         `}>
-          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50 flex justify-between items-center">
+          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50">
             <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
               {categories.find(c => c.id === selectedCategory)?.label} 트렌드 순위
             </h2>
-            <button
-              onClick={handleManualUpdate}
-              disabled={updating}
-              className={`p-1.5 rounded-lg hover:bg-neutral-800 text-gray-400 transition-colors ${updating ? 'animate-spin text-indigo-500' : ''}`}
-              title="데이터 즉시 업데이트"
-            >
-              <RefreshCw size={16} />
-            </button>
           </div>
 
           <div className="flex-1 md:overflow-y-auto p-4 space-y-3 custom-scrollbar">
