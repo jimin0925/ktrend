@@ -41,7 +41,8 @@ async def read_trends(category: str = "all"):
     Returns cached data if available.
     Reason is now fetched on-demand via /api/analyze to save costs/time.
     """
-    trends_data = await collector.get_trends(source="all")
+    first_source = "shopping" if category != "all" else "all" # optimize source? No, collector handles it.
+    trends_data = await collector.get_trends(source="all", category_filter=category)
     
     # Transform to object
     results = []

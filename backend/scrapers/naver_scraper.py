@@ -64,7 +64,7 @@ class NaverShoppingScraper:
                             full_text = await item.inner_text()
                             parts = full_text.split('\n')
                             keyword = parts[1].strip() if len(parts) > 1 else full_text.strip()
-                            all_trends.append(keyword)
+                            all_trends.append({"keyword": keyword, "category": cat_name})
                             count += 1
                             
                         await page.close()
