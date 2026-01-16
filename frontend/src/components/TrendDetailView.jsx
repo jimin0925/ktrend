@@ -32,7 +32,8 @@ const TrendDetailView = ({ trend, onBack }) => {
             .then(data => {
                 if (!signal.aborted) {
                     setAnalysis(data);
-                    setChartData(data.chart_data || []);
+                    // Initial load: Slice to last 30 days to match '1mo' default
+                    setChartData(data.chart_data ? data.chart_data.slice(-30) : []);
                     setLoading(false);
                 }
             })
