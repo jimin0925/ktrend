@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import TrendCard from './components/TrendCard';
-import TrendDetailView from './components/TrendDetailView';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import TrendCard from './components/TrendCard'
+import TrendDetailView from './components/TrendDetailView'
 
 function App() {
   const [trends, setTrends] = useState([])
@@ -21,16 +21,11 @@ function App() {
     setLoading(true)
     try {
       const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      // In a real scenario, you'd pass ?category=${category} to the backend.
-      // For now, we fetch 'all' and filter client-side if needed, or backend handles it.
-      // Since our scraper does separate calls, let's assume backend supports it or we filter mock data.
-      // Current backend only supports 'all' cache mostly, but let's pass it.
       const response = await axios.get(`${apiUrl}/api/trends?category=${category}`);
 
       const fetchedTrends = response.data.trends || [];
       setTrends(fetchedTrends);
 
-      // Auto-select first trend if detailed view is empty
       if (fetchedTrends.length > 0) {
         setSelectedTrend(fetchedTrends[0]);
       } else {
@@ -77,40 +72,47 @@ function App() {
         </div>
       </header>
 
-      <div key={i} className="h-24 bg-white rounded-xl shadow-sm border border-gray-200 animate-pulse"></div>
-            ))}
-    </div>
-  ) : (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {trends.map((trend) => (
-        <TrendCard
-          key={trend.rank}
-          trend={trend}
-          onClick={setSelectedTrend}
-        />
-      ))}
+      {/* Main Content - Split View */}
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-6 grid grid-cols-12 gap-6 overflow-hidden">
+
+        {/* Left Sidebar: Trend List */}
+        <div className="col-span-4 flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
+              {categories.find(c => c.id === selectedCategory)?.label} 트렌드 순위
+            </h2>
+          </div>
+
+          <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
+            {loading ? (
+              <div className="flex justify-center py-20">
+                <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-600 border-t-transparent"></div>
+              </div>
+            ) : trends.length > 0 ? (
+              trends.map((trend) => (
+                <TrendCard
+                  key={trend.rank}
+                  trend={trend}
+                  isActive={selectedTrend?.keyword === trend.keyword}
+                  onClick={setSelectedTrend}
+                />
+              ))
+            ) : (
+              <div className="text-center py-20 text-gray-400">
+                데이터를 불러올 수 없습니다.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Panel: Detail View */}
+        <div className="col-span-8 h-full">
+          <TrendDetailView trend={selectedTrend} />
+        </div>
+
+      </main>
     </div>
   )
 }
-      </main >
 
-  {/* Footer */ }
-  < footer className = "mt-12 py-8 text-center text-gray-400 text-sm" >
-    <p>&copy; 2024 Trand Korea. Powered by Naver DataLab & Google Trends.</p>
-      </footer >
-
-  {/* Modal */ }
-{
-  selectedTrend && (
-    <TrendDetailModal
-      isOpen={!!selectedTrend}
-      trend={selectedTrend}
-      onClose={() => setSelectedTrend(null)}
-    />
-  )
-}
-    </div >
-  );
-}
-
-export default App;
+export default App
