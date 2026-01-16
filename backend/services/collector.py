@@ -1,7 +1,5 @@
-import os
-import urllib.request
-import json
-from datetime import datetime, timedelta
+from datetime import datetime
+from backend.database import Database
 
 # Naver API credentials should be loaded from env or passed in
 # For now, we will structure the class to accept them
@@ -10,75 +8,83 @@ class TrendCollector:
     def __init__(self, client_id: str = None, client_secret: str = None):
         self.client_id = client_id
         self.client_secret = client_secret
-        self._cache = {}
-        self._cache_expiry = {}
-        self.CACHE_FILE = "trends_cache.json"
-        self.load_cache()
-
-    def load_cache(self):
-        try:
-            if os.path.exists(self.CACHE_FILE):
-                with open(self.CACHE_FILE, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    # Restore cache and expiry (need to parse datetime string)
-                    for key, val in data.get("cache", {}).items():
-                        self._cache[key] = val
-                    for key, val in data.get("expiry", {}).items():
-                        self._cache_expiry[key] = datetime.fromisoformat(val)
-                print(f"[CACHE] Loaded persistent cache from {self.CACHE_FILE}")
-        except Exception as e:
-            print(f"[CACHE] Failed to load cache file: {e}")
-
-    def save_cache(self):
-        try:
-            # Convert datetime to string for JSON serialization
-            expiry_str = {k: v.isoformat() for k, v in self._cache_expiry.items()}
-            data = {
-                "cache": self._cache,
-                "expiry": expiry_str
-            }
-            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
-                json.dump(data, f, ensure_ascii=False, indent=2)
-            print(f"[CACHE] Saved to {self.CACHE_FILE}")
-        except Exception as e:
-            print(f"[CACHE] Failed to save cache file: {e}")
+        self.db = Database()
 
     async def get_trends(self, source: str = "all", category_filter: str = "all"):
         """
-        Fetch trends from specified source using Playwright scrapers (Async).
-        
-        Includes simple in-memory caching (1 hour) to prevent blocking/slowness.
+        Fetch trends:
+        1. Try DB (FAST)
+        2. If DB empty, Scrape (SLOW) + Save to DB
         """
-        # Check cache
-        cache_key = f"{source}_{category_filter}"
-        if cache_key in self._cache and datetime.now() < self._cache_expiry.get(cache_key, datetime.min):
-            print(f"[CACHE HIT] Returning cached trends for {cache_key}")
-            return self._cache[cache_key]
+        # 1. Try DB
+        print(f"[COLLECTOR] Fetching trends for {category_filter} from DB...")
+        db_trends = self.db.get_latest_trends(category_filter)
+        if db_trends:
+            print(f"[COLLECTOR] Found {len(db_trends)} items in DB.")
+            return db_trends
 
-        print(f"[CACHE MISS] Fetching fresh trends for {source}...")
+        # 2. Scrape (Fallback)
+        print(f"[COLLECTOR] DB empty. Scraping live data for {category_filter}...")
+        trends = await self._scrape_live(source, category_filter)
+        
+        # 3. Save to DB (if valid)
+        if trends:
+            self.db.save_trends(category_filter, trends)
+            
+        return trends
+        
+    async def collect_all_and_save(self):
+        """
+        Background Job: Scrape ALL categories and save to DB.
+        """
+        print("[BACKGROUND] Starting hourly trend collection...")
+        categories = ["Fashion", "Digital", "Food", "Living"]
+        
+        # 1. Scrape specific categories
+        for cat in categories:
+            print(f"[BACKGROUND] Scraping {cat}...")
+            trends = await self._scrape_live("shopping", cat)
+            if trends:
+                self.db.save_trends(cat, trends)
+                
+        # 2. Scrape "all" (Integrated)
+        print(f"[BACKGROUND] Scraping Integrated...")
+        trends_all = await self._scrape_live("all", "all")
+        if trends_all:
+            self.db.save_trends("all", trends_all)
+            
+        print("[BACKGROUND] Collection complete.")
+
+    async def _scrape_live(self, source, category_filter):
+        """
+        Internal method to reuse scraping logic.
+        """
         trends = []
         try:
             import asyncio
             
-            if source in ["shopping", "all"]:
+            if source in ["shopping", "all"] or category_filter != "all":
                 from backend.scrapers.naver_scraper import NaverShoppingScraper
-                print(" -> Invoking NaverShoppingScraper (Async)...")
                 # Naver scraper returns [{"keyword": "...", "category": "..."}, ...]
+                # Optimization: Pass category to scraper if supported?
+                # Currently scraper fetches ALL. Ideally we optimize scraper to fetch only target.
+                # But current scraper fetches all 4. 
+                # Let's just filter.
+                print(" -> Invoking NaverShoppingScraper (Async)...")
                 naver_trends_raw = await NaverShoppingScraper().get_trends()
                 
                 for item in naver_trends_raw:
-                    # Item is dict now
                     kw = item["keyword"]
                     cat = item["category"]
                     
-                    # Filter logic
                     if category_filter != "all" and cat != category_filter:
                         continue
-                        
+                    
                     trends.append({"keyword": kw, "source": "Naver Shopping", "category": cat})
-                
+            
+            # YouTube (only for 'all' or specific youtube tab?)
+            # Assuming YouTube is general
             if source in ["youtube", "all"] and category_filter == "all":
-                 # YouTube scraping logic (unchanged, mainly for 'all' or 'youtube' source)
                 try:
                     from backend.scrapers.youtube_scraper import YoutubeScraper
                     print(" -> Invoking YoutubeScraper (Async)...")
@@ -87,22 +93,15 @@ class TrendCollector:
                 except Exception as e:
                     print(f" -> [WARNING] YouTube scraper failed: {e}")
                 
-            # If all failed, return mock
             if not trends:
-                print(" -> [WARNING] No trends found. Returning MOCK data (NOT CACHING).")
+                print(" -> [WARNING] No trends found. Returning MOCK data.")
                 return self.get_mock_trends(category_filter)
-            
-            # Update cache
-            print(f" -> [CACHE SET] Storing {len(trends)} items in cache for {cache_key}")
-            self._cache[cache_key] = trends
-            self._cache_expiry[cache_key] = datetime.now() + timedelta(hours=1)
-            self.save_cache()
             
             return trends
             
         except Exception as e:
-            print(f" -> [ERROR] Error in get_trends: {e}")
-            return self.get_mock_trends()
+            print(f"[ERROR] Live scrape failed: {e}")
+            return self.get_mock_trends(category_filter)
 
     def get_mock_trends(self, category_filter="all"):
         mocks = {

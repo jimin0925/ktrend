@@ -1,30 +1,53 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
+import uvicorn
+import asyncio
+from contextlib import asynccontextmanager
+
 from backend.services.collector import TrendCollector
 from backend.services.analyzer import TrendAnalyzer
+from backend.services.naver_datalab import NaverDataLab
 import os
 
-app = FastAPI(title="Korea Trend API", description="API for Korea Trend Website", version="1.0.0")
-
-# Credentials
-# In production, use os.getenv("NAVER_CLIENT_ID")
-CLIENT_ID = "XcqIIExatxy29XoZ6RHC"
-CLIENT_SECRET = "I1jOucavL2"
-
-# Services
-collector = TrendCollector(CLIENT_ID, CLIENT_SECRET)
+# Initialize Services
+collector = TrendCollector()
 analyzer = TrendAnalyzer()
+datalab_service = NaverDataLab()
 
-# CORS Setup (Allow Frontend)
+# Background Scheduler
+scheduler = AsyncIOScheduler()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup
+    print("[SYSTEM] Starting Background Scheduler...")
+    scheduler.add_job(collector.collect_all_and_save, 'interval', hours=1)
+    scheduler.start()
+    
+    # Run initial collection in background (fire and forget)
+    asyncio.create_task(collector.collect_all_and_save())
+    
+    yield
+    
+    # Shutdown
+    print("[SYSTEM] Shutting down Scheduler...")
+    scheduler.shutdown()
+
+app = FastAPI(title="Korea Trend API", description="API for Korea Trend Website", version="1.0.0", lifespan=lifespan)
+
+# CORS Config
 origins = [
-    "http://localhost:5173", # Vite default
+    "http://localhost:5173",
     "http://localhost:3000",
-    "*" # Allow all for Vercel/Production for now (or add specific Vercel domains later)
+    "https://ktrend.vercel.app",
+    "https://trand-web-project.vercel.app",
+    "*"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all origins effectively
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
