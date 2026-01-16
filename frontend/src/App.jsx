@@ -44,7 +44,7 @@ function App() {
   }, [selectedCategory])
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col h-screen overflow-hidden">
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans flex flex-col">
       {/* Top Navigation */}
       <header className="bg-white border-b border-gray-200 z-10 shrink-0">
         <div className="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
@@ -61,8 +61,8 @@ function App() {
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${selectedCategory === cat.id
-                    ? 'bg-white text-indigo-600 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
+                  ? 'bg-white text-indigo-600 shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
                   }`}
               >
                 {cat.label}
@@ -73,10 +73,10 @@ function App() {
       </header>
 
       {/* Main Content - Split View */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-6 grid grid-cols-12 gap-6 overflow-hidden">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
 
         {/* Left Sidebar: Trend List */}
-        <div className="col-span-4 flex flex-col h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="md:col-span-4 flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm min-h-[500px]">
           <div className="p-4 border-b border-gray-100 bg-gray-50/50">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">
               {categories.find(c => c.id === selectedCategory)?.label} 트렌드 순위

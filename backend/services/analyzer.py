@@ -16,6 +16,27 @@ class TrendAnalyzer:
         else:
             self.client = None
             print("[WARNING] No OPENAI_API_KEY found. Analyzer will return mock data.")
+            
+        # Caching
+        self.CACHE_FILE = "analysis_cache.json"
+        self._cache = {}
+        self.load_cache()
+
+    def load_cache(self):
+        try:
+            if os.path.exists(self.CACHE_FILE):
+                with open(self.CACHE_FILE, 'r', encoding='utf-8') as f:
+                    self._cache = json.load(f)
+                print(f"[ANALYZER] Loaded persistent cache from {self.CACHE_FILE}")
+        except Exception as e:
+            print(f"[ANALYZER] Failed to load cache: {e}")
+
+    def save_cache(self):
+        try:
+            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(self._cache, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"[ANALYZER] Failed to save cache: {e}")
 
     async def analyze_trend(self, keyword: str):
         """
@@ -26,8 +47,6 @@ class TrendAnalyzer:
         if not self.client:
             return self._get_mock_analysis(keyword)
 
-        print(f"Analyzing trend for: {keyword} (Native Web Search + Naver Data)...")
-        
         # 1. Fetch Naver Datalab Data (Async wrap)
         from backend.services.naver_datalab import NaverDataLab
         try:
@@ -37,7 +56,6 @@ class TrendAnalyzer:
             
             # Create a summary for LLM context
             if chart_data:
-                # Find peak
                 peak = max(chart_data, key=lambda x: x['ratio'])
                 recent = chart_data[-1] if chart_data else None
                 data_context = f"네이버 검색량 추이 (1년): {chart_data[0]['date']}~{chart_data[-1]['date']}. 최고점: {peak['date']} ({peak['ratio']}). 최근: {recent['date']} ({recent['ratio']})."
@@ -47,6 +65,24 @@ class TrendAnalyzer:
             print(f"Naver DataLab Error: {e}")
             chart_data = []
             data_context = "네이버 검색량 데이터 조회 실패."
+
+        # 2. Check Cache for Reason (Skip LLM if cached)
+        # We cache just the 'reason' text to save LLM costs. Chart data is dynamic.
+        from datetime import datetime, timedelta
+        
+        cached_item = self._cache.get(keyword)
+        if cached_item:
+            # Check expiry (let's say 24 hours)
+            timestamp = datetime.fromisoformat(cached_item["timestamp"])
+            if datetime.now() < timestamp + timedelta(hours=24):
+                print(f"[CACHE HIT] Returning cached analysis for '{keyword}'")
+                return {
+                    "keyword": keyword,
+                    "reason": cached_item["reason"],
+                    "chart_data": chart_data
+                }
+
+        print(f"Analyzing trend for: {keyword} (LLM Call)...") # Only print if calling LLM
 
         # 2. LLM Analysis
         system_prompt = """
@@ -108,6 +144,14 @@ class TrendAnalyzer:
             content = re.sub(r'\*\*([^*]+)\*\*', r'\1', content)
             # Remove bold __text__ -> text
             content = re.sub(r'__([^_]+)__', r'\1', content)
+            
+            # Save to Cache
+            from datetime import datetime
+            self._cache[keyword] = {
+                "reason": content,
+                "timestamp": datetime.now().isoformat()
+            }
+            self.save_cache()
             
             # Return result plain text + chart data
             return {

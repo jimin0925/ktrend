@@ -12,7 +12,37 @@ class TrendCollector:
         self.client_secret = client_secret
         self._cache = {}
         self._cache_expiry = {}
-        
+        self.CACHE_FILE = "trends_cache.json"
+        self.load_cache()
+
+    def load_cache(self):
+        try:
+            if os.path.exists(self.CACHE_FILE):
+                with open(self.CACHE_FILE, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    # Restore cache and expiry (need to parse datetime string)
+                    for key, val in data.get("cache", {}).items():
+                        self._cache[key] = val
+                    for key, val in data.get("expiry", {}).items():
+                        self._cache_expiry[key] = datetime.fromisoformat(val)
+                print(f"[CACHE] Loaded persistent cache from {self.CACHE_FILE}")
+        except Exception as e:
+            print(f"[CACHE] Failed to load cache file: {e}")
+
+    def save_cache(self):
+        try:
+            # Convert datetime to string for JSON serialization
+            expiry_str = {k: v.isoformat() for k, v in self._cache_expiry.items()}
+            data = {
+                "cache": self._cache,
+                "expiry": expiry_str
+            }
+            with open(self.CACHE_FILE, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f"[CACHE] Saved to {self.CACHE_FILE}")
+        except Exception as e:
+            print(f"[CACHE] Failed to save cache file: {e}")
+
     async def get_trends(self, source: str = "all", category_filter: str = "all"):
         """
         Fetch trends from specified source using Playwright scrapers (Async).
@@ -66,6 +96,7 @@ class TrendCollector:
             print(f" -> [CACHE SET] Storing {len(trends)} items in cache for {cache_key}")
             self._cache[cache_key] = trends
             self._cache_expiry[cache_key] = datetime.now() + timedelta(hours=1)
+            self.save_cache()
             
             return trends
             
