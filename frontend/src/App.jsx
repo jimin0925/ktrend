@@ -4,6 +4,11 @@ import TrendCard from './components/TrendCard'
 import TrendDetailView from './components/TrendDetailView'
 
 function App() {
+  const [trends, setTrends] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [selectedTrend, setSelectedTrend] = useState(null)
+  const [selectedCategory, setSelectedCategory] = useState("all")
+
   /* State for Mobile View Navigation */
   const [showMobileDetail, setShowMobileDetail] = useState(false)
 
