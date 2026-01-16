@@ -105,7 +105,7 @@ const TrendDetailView = ({ trend, onBack }) => {
                     <span className="px-2.5 py-0.5 rounded-full bg-indigo-950/50 text-indigo-400 font-bold text-xs ring-1 ring-indigo-500/20">
                         #{trend.rank} Trending
                     </span>
-                    {trend.source && (
+                    {trend.source && trend.source !== 'Unknown' && (
                         <span className="text-gray-500 text-xs font-medium uppercase tracking-wide">
                             {trend.source}
                         </span>
