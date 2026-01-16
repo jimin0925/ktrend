@@ -109,7 +109,7 @@ function App() {
         <div className={`
             md:col-span-8 h-full z-20
             ${showMobileDetail
-            ? 'fixed inset-0 z-50 bg-neutral-950 flex flex-col animate-in fade-in duration-200 md:static md:bg-transparent md:block md:z-auto md:inset-auto'
+            ? 'fixed inset-0 z-50 bg-neutral-950 flex flex-col md:static md:bg-transparent md:block md:z-auto md:inset-auto'
             : 'hidden md:block'}
         `}>
           <TrendDetailView
