@@ -57,6 +57,16 @@ app.add_middleware(
 def read_root():
     return {"message": "Korea Trend API is running"}
 
+@app.get("/api/manual-update")
+async def manual_update():
+    """
+    Manually trigger trend collection (bypasses scheduler).
+    Useful if server slept and missed a scheduled job.
+    """
+    print("[MANUAL] Triggering manual update...")
+    await collector.collect_all_and_save()
+    return {"status": "success", "message": "Trends updated manually"}
+
 @app.get("/api/trends")
 async def read_trends(category: str = "all"):
     """
