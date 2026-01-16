@@ -1,39 +1,39 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-const TrendCard = ({ trend, onClick }) => {
+const TrendCard = ({ trend, onClick, isActive }) => {
     return (
         <motion.div
-            whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" }}
-            whileTap={{ scale: 0.98 }}
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ x: 4 }}
             onClick={() => onClick(trend)}
-            className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 cursor-pointer relative overflow-hidden group transition-all"
+            className={`cursor-pointer rounded-xl border p-4 transition-all duration-200 relative overflow-hidden ${isActive
+                    ? 'bg-indigo-50 border-indigo-200 ring-1 ring-indigo-500/20 shadow-md'
+                    : 'bg-white border-gray-100 hover:border-gray-200 hover:shadow-sm'
+                }`}
         >
-            <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                {/* Decorative elements or Category Icon could go here */}
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full blur-xl"></div>
-            </div>
-
             <div className="flex items-center gap-4">
-                <span className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 to-purple-600 font-mono">
+                <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${trend.rank <= 3
+                        ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                        : 'bg-gray-100 text-gray-500'
+                    }`}>
                     {trend.rank}
                 </span>
-                <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                        <h3 className="text-xl font-bold text-gray-800 group-hover:text-indigo-700 transition-colors">
-                            {trend.keyword}
-                        </h3>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${trend.source === 'Naver Shopping' ? 'bg-green-100 text-green-700' :
-                                trend.source === 'YouTube' ? 'bg-red-100 text-red-700' :
-                                    'bg-gray-100 text-gray-600'
-                            }`}>
-                            {trend.source}
-                        </span>
-                    </div>
-                    <p className="text-xs text-gray-500 line-clamp-1">
-                        {trend.reason ? trend.reason.substring(0, 30) + (trend.reason.length > 30 ? "..." : "") : "클릭하여 이유 확인하기"}
-                    </p>
+
+                <div className="flex-1 min-w-0">
+                    <h3 className={`font-bold text-lg truncate ${isActive ? 'text-indigo-900' : 'text-gray-800'}`}>
+                        {trend.keyword}
+                    </h3>
                 </div>
+
+                {isActive && (
+                    <motion.div
+                        layoutId="active-indicator"
+                        className="h-2 w-2 rounded-full bg-indigo-500 shrink-0"
+                    />
+                )}
             </div>
         </motion.div>
     );
