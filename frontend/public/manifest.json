@@ -1,0 +1,16 @@
+{
+    "name": "K-Trend Now",
+    "short_name": "K-Trend",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#0a0a0a",
+    "theme_color": "#0a0a0a",
+    "description": "Korea Real-time Trends Analysis",
+    "icons": [
+        {
+            "src": "vite.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml"
+        }
+    ]
+}
