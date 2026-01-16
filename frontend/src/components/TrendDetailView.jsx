@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ExternalLink, Newspaper, TrendingUp, Search } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const TrendDetailView = ({ trend }) => {
+const TrendDetailView = ({ trend, onBack }) => {
     const [analysis, setAnalysis] = React.useState(null);
     const [chartData, setChartData] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -12,25 +12,40 @@ const TrendDetailView = ({ trend }) => {
 
     // Initial Analysis Fetch
     React.useEffect(() => {
-        if (trend) {
-            setLoading(true);
-            setAnalysis(null);
-            setChartData([]);
-            setChartPeriod('1mo');
+        if (!trend) return;
 
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-            fetch(`${apiUrl}/api/analyze/${encodeURIComponent(trend.keyword)}`)
-                .then(res => res.json())
-                .then(data => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        setLoading(true);
+        setAnalysis(null);
+        setChartData([]);
+        setChartPeriod('1mo');
+
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+        // ... (rest of logic is same, just updating signature above) ...
+
+
+        fetch(`${apiUrl}/api/analyze/${encodeURIComponent(trend.keyword)}`, { signal })
+            .then(res => res.json())
+            .then(data => {
+                if (!signal.aborted) {
                     setAnalysis(data);
                     setChartData(data.chart_data || []);
                     setLoading(false);
-                })
-                .catch(err => {
+                }
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') {
                     console.error("Failed to analyze:", err);
                     setLoading(false);
-                });
-        }
+                }
+            });
+
+        return () => {
+            controller.abort();
+        };
     }, [trend]);
 
     // Fetch Chart Data when Period Changes
@@ -73,10 +88,19 @@ const TrendDetailView = ({ trend }) => {
     }
 
     return (
-        <div className="bg-neutral-900 rounded-2xl border border-neutral-800 shadow-xl h-full flex flex-col overflow-hidden">
+        <div className="bg-neutral-900 md:rounded-2xl md:border border-neutral-800 shadow-xl h-full flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="p-8 pb-6 border-b border-neutral-800 bg-neutral-900">
-                <div className="flex items-center gap-3 mb-2">
+            <div className="p-6 md:p-8 pb-6 border-b border-neutral-800 bg-neutral-900 flex flex-col relative">
+                {/* Back Button (Mobile Only) */}
+                <button
+                    onClick={onBack}
+                    className="md:hidden absolute top-6 left-4 z-50 flex items-center gap-2 px-4 py-2 bg-neutral-800 rounded-full shadow-lg border border-neutral-700 text-white font-bold hover:bg-neutral-700 transition-colors"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7" /><path d="M19 12H5" /></svg>
+                    <span>목록으로</span>
+                </button>
+
+                <div className="flex items-center gap-3 mb-2 pl-0 mt-12 md:mt-0 md:pl-0">
                     <span className="px-2.5 py-0.5 rounded-full bg-indigo-950/50 text-indigo-400 font-bold text-xs ring-1 ring-indigo-500/20">
                         #{trend.rank} Trending
                     </span>
@@ -86,7 +110,7 @@ const TrendDetailView = ({ trend }) => {
                         </span>
                     )}
                 </div>
-                <h1 className="text-4xl font-black text-white tracking-tight">{trend.keyword}</h1>
+                <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight pl-10 md:pl-0">{trend.keyword}</h1>
             </div>
 
             {/* Content Scroll Area */}
