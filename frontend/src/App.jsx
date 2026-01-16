@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import axios from 'axios'
-import { RefreshCw } from 'lucide-react'
 import TrendCard from './components/TrendCard'
 import TrendDetailView from './components/TrendDetailView'
 
 function App() {
   const [trends, setTrends] = useState([])
   const [loading, setLoading] = useState(false)
-  const [updating, setUpdating] = useState(false)
   const [selectedTrend, setSelectedTrend] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState("all")
 
@@ -43,22 +41,6 @@ function App() {
       setTrends([])
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleManualUpdate = async () => {
-    if (updating) return;
-    setUpdating(true);
-    try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-      await axios.get(`${apiUrl}/api/manual-update`);
-      alert("데이터가 최신 상태로 업데이트되었습니다!");
-      fetchTrends(selectedCategory); // Refresh the list
-    } catch (e) {
-      console.error(e);
-      alert("업데이트 요청 실패");
-    } finally {
-      setUpdating(false);
     }
   }
 
@@ -101,7 +83,7 @@ function App() {
       </header>
 
       {/* Main Content - Split View */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-[calc(100vh-64px)] md:h-[calc(100vh-64px)] md:overflow-hidden">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 min-h-[calc(100dvh-56px)] md:h-[calc(100vh-64px)] md:overflow-hidden">
 
         {/* Left Sidebar: Trend List */}
         <div className={`
