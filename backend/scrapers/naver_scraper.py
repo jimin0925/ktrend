@@ -40,18 +40,27 @@ class NaverShoppingScraper:
                             await asyncio.sleep(2) # Stabilize
                             await page.wait_for_selector(".btn_submit", timeout=5000)
                             await page.click(".btn_submit")
-                            await asyncio.sleep(2) # Wait for AJAX reload
+                            try:
+                                await page.wait_for_load_state("networkidle", timeout=5000)
+                            except:
+                                pass
+                            await asyncio.sleep(3) # Wait for AJAX reload
                         except Exception as e:
                             print(f"Warning: Could not click submit button: {e}")
 
                         # Wait for list (fast timeout since we expect it)
                         try:
-                            # increased timeout to 10s
-                            await page.wait_for_selector(".rank_top1000_list li a", timeout=10000)
+                            # increased timeout to 15s
+                            await page.wait_for_selector(".rank_top1000_list li a", timeout=15000)
                         except:
                             # Fallback: click simple submit if needed, or just skip
-                            print(f"Timeout waiting for {cat_name} list.")
-                            pass
+                            print(f"Timeout waiting for {cat_name} list. Retrying click...")
+                            try:
+                                await page.click(".btn_submit")
+                                await asyncio.sleep(3)
+                                await page.wait_for_selector(".rank_top1000_list li a", timeout=10000)
+                            except Exception as e2:
+                                print(f"Retry failed for {cat_name}: {e2}")
                         
                         items = await page.query_selector_all(".rank_top1000_list li a")
                         print(f"Found {len(items)} items for {cat_name}")
