@@ -30,12 +30,12 @@ class TrendCollector:
                     latest_ts = datetime.fromisoformat(latest_ts_str.replace('Z', '+00:00'))
                     now = datetime.now(timezone.utc)
                     
-                    if (now - latest_ts) > timedelta(hours=1):
+                    if (now - latest_ts) > timedelta(minutes=10):
                         print(f"[COLLECTOR] Data is STALE (Last update: {latest_ts_str}). Triggering background refresh.")
                         import asyncio
                         asyncio.create_task(self.collect_all_and_save())
                     else:
-                        print(f"[COLLECTOR] Data is FRESH (Last update: {latest_ts_str}).")
+                        print(f"[COLLECTOR] Data is FRESH (Last update: {latest_ts_str}). Skipping update.")
             except Exception as e:
                 print(f"[COLLECTOR] Error checking staleness: {e}. Ignoring.")
 
