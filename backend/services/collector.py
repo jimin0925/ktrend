@@ -14,7 +14,7 @@ class TrendCollector:
         """
         Fetch trends:
         1. Try DB (FAST)
-        2. If DB empty, Scrape (SLOW) + Save to DB
+        2. If DB empty, Return Mock (FAST) + Trigger Background Scrape
         """
         # 1. Try DB
         print(f"[COLLECTOR] Fetching trends for {category_filter} from DB...")
@@ -23,15 +23,17 @@ class TrendCollector:
             print(f"[COLLECTOR] Found {len(db_trends)} items in DB.")
             return db_trends
 
-        # 2. Scrape (Fallback)
-        print(f"[COLLECTOR] DB empty. Scraping live data for {category_filter}...")
-        trends = await self._scrape_live(source, category_filter)
+        # 2. Failover: DB empty (Cold Start)
+        # Instead of blocking for 60s to scrape, return Mocks immediately
+        # and start scraping in the background.
+        print(f"[COLLECTOR] DB empty. Returning MOCKS immediately and triggering background scrape.")
         
-        # 3. Save to DB (if valid)
-        if trends:
-            self.db.save_trends(category_filter, trends)
-            
-        return trends
+        import asyncio
+        # Trigger full refresh in background
+        asyncio.create_task(self.collect_all_and_save())
+        
+        # Return mock data instant response
+        return self.get_mock_trends(category_filter)
         
     async def collect_all_and_save(self):
         """
