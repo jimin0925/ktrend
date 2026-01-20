@@ -9,6 +9,7 @@ class TrendCollector:
         self.client_id = client_id
         self.client_secret = client_secret
         self.db = Database()
+        self.is_updating = False
 
     async def get_trends(self, source: str = "all", category_filter: str = "all"):
         """
@@ -30,10 +31,14 @@ class TrendCollector:
                     latest_ts = datetime.fromisoformat(latest_ts_str.replace('Z', '+00:00'))
                     now = datetime.now(timezone.utc)
                     
-                    if (now - latest_ts) > timedelta(minutes=10):
-                        print(f"[COLLECTOR] Data is STALE (Last update: {latest_ts_str}). Triggering background refresh.")
-                        import asyncio
-                        asyncio.create_task(self.collect_all_and_save())
+                    if (now - latest_ts) > timedelta(hours=1):
+                        if not self.is_updating:
+                            print(f"[COLLECTOR] Data is STALE (Last update: {latest_ts_str}). Triggering background refresh.")
+                            self.is_updating = True
+                            import asyncio
+                            asyncio.create_task(self.collect_all_and_save())
+                        else:
+                            print(f"[COLLECTOR] Data is STALE but update already in progress.")
                     else:
                         print(f"[COLLECTOR] Data is FRESH (Last update: {latest_ts_str}). Skipping update.")
             except Exception as e:
@@ -58,23 +63,30 @@ class TrendCollector:
         """
         Background Job: Scrape ALL categories and save to DB.
         """
-        print("[BACKGROUND] Starting hourly trend collection...")
-        categories = ["Fashion", "Digital", "Food", "Living"]
-        
-        # 1. Scrape specific categories
-        for cat in categories:
-            print(f"[BACKGROUND] Scraping {cat}...")
-            trends = await self._scrape_live("shopping", cat)
-            if trends:
-                self.db.save_trends(cat, trends)
-                
-        # 2. Scrape "all" (Integrated)
-        print(f"[BACKGROUND] Scraping Integrated...")
-        trends_all = await self._scrape_live("all", "all")
-        if trends_all:
-            self.db.save_trends("all", trends_all)
+        self.is_updating = True
+        try:
+            print("[BACKGROUND] Starting hourly trend collection...")
+            categories = ["Fashion", "Digital", "Food", "Living"]
             
-        print("[BACKGROUND] Collection complete.")
+            # 1. Scrape specific categories
+            for cat in categories:
+                print(f"[BACKGROUND] Scraping {cat}...")
+                trends = await self._scrape_live("shopping", cat)
+                if trends:
+                    self.db.save_trends(cat, trends)
+                    
+            # 2. Scrape "all" (Integrated)
+            print(f"[BACKGROUND] Scraping Integrated...")
+            trends_all = await self._scrape_live("all", "all")
+            if trends_all:
+                self.db.save_trends("all", trends_all)
+                
+            print("[BACKGROUND] Collection complete.")
+        except Exception as e:
+            print(f"[BACKGROUND] Error during collection: {e}")
+        finally:
+            self.is_updating = False
+            print("[BACKGROUND] Lock released.")
 
     async def _scrape_live(self, source, category_filter):
         """
