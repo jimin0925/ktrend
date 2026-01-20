@@ -20,6 +20,25 @@ class TrendCollector:
         print(f"[COLLECTOR] Fetching trends for {category_filter} from DB...")
         db_trends = self.db.get_latest_trends(category_filter)
         if db_trends:
+            # Check Staleness Logic
+            try:
+                latest_ts_str = db_trends[0].get("created_at")
+                if latest_ts_str:
+                    from datetime import datetime, timedelta, timezone
+                    # Supabase returns UTC ISO string usually with +00:00 or Z
+                    # Safe parsing
+                    latest_ts = datetime.fromisoformat(latest_ts_str.replace('Z', '+00:00'))
+                    now = datetime.now(timezone.utc)
+                    
+                    if (now - latest_ts) > timedelta(hours=1):
+                        print(f"[COLLECTOR] Data is STALE (Last update: {latest_ts_str}). Triggering background refresh.")
+                        import asyncio
+                        asyncio.create_task(self.collect_all_and_save())
+                    else:
+                        print(f"[COLLECTOR] Data is FRESH (Last update: {latest_ts_str}).")
+            except Exception as e:
+                print(f"[COLLECTOR] Error checking staleness: {e}. Ignoring.")
+
             print(f"[COLLECTOR] Found {len(db_trends)} items in DB.")
             return db_trends
 

@@ -91,7 +91,7 @@ class Database:
             latest_batch.sort(key=lambda x: x["rank"])
             
             # Format back to simple list/dict
-            formatted = [{"keyword": item["keyword"], "rank": item["rank"], "category": item["category"]} for item in latest_batch]
+            formatted = [{"keyword": item["keyword"], "rank": item["rank"], "category": item["category"], "created_at": item["created_at"]} for item in latest_batch]
             print(f"[DB] Loaded {len(formatted)} trends from DB for {category}")
             return formatted
             
