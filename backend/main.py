@@ -92,8 +92,14 @@ async def read_trends(category: str = "all"):
             "category": category
         })
         
+    # Extract timestamp from the first item (assuming sorted batch)
+    last_updated = None
+    if trends_data and isinstance(trends_data[0], dict):
+        last_updated = trends_data[0].get("created_at")
+
     return {
         "category": category,
+        "last_updated": last_updated,
         "trends": results
     }
 

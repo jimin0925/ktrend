@@ -8,6 +8,7 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [selectedTrend, setSelectedTrend] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   /* State for Mobile View Navigation */
   const [showMobileDetail, setShowMobileDetail] = useState(false)
@@ -28,6 +29,7 @@ function App() {
 
       const fetchedTrends = response.data.trends || [];
       setTrends(fetchedTrends);
+      setLastUpdated(response.data.last_updated);
 
       if (fetchedTrends.length > 0) {
         setSelectedTrend(fetchedTrends[0]);
@@ -42,6 +44,21 @@ function App() {
     } finally {
       setLoading(false)
     }
+  }
+
+  /* Helper to format time ago */
+  const formatTimeAgo = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffSeconds = Math.floor((now - date) / 1000);
+
+    if (diffSeconds < 60) return "방금 전";
+    const diffMinutes = Math.floor(diffSeconds / 60);
+    if (diffMinutes < 60) return `${diffMinutes}분 전`;
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) return `${diffHours}시간 전`;
+    return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
   }
 
   const handleTrendClick = (trend) => {
@@ -90,10 +107,15 @@ function App() {
             md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm md:h-full
             ${showMobileDetail ? 'hidden md:flex' : 'flex'}
         `}>
-          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50">
+          <div className="p-4 border-b border-neutral-800 bg-neutral-900/50 flex justify-between items-end">
             <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
               {categories.find(c => c.id === selectedCategory)?.label} 트렌드 순위
             </h2>
+            {lastUpdated && (
+              <span className="text-xs text-gray-600 font-medium">
+                {formatTimeAgo(lastUpdated)} 업데이트
+              </span>
+            )}
           </div>
 
           <div className="flex-1 md:overflow-y-auto p-4 space-y-3 custom-scrollbar">
