@@ -143,10 +143,10 @@ function App() {
 
         {/* Right Panel: Detail View */}
         <div className={`
-            md:col-span-8 h-full z-20
+            md:col-span-8 md:h-full md:block z-20
             ${showMobileDetail
-            ? 'fixed inset-0 z-50 bg-neutral-950 flex flex-col md:static md:bg-transparent md:block md:z-auto md:inset-auto'
-            : 'hidden md:block'}
+            ? 'fixed top-0 left-0 w-full h-[100dvh] z-50 bg-neutral-950 flex flex-col'
+            : 'hidden'}
         `}>
           <TrendDetailView
             key={selectedTrend?.keyword}
