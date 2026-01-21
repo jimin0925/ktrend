@@ -118,7 +118,7 @@ function App() {
             )}
           </div>
 
-          <div className="flex-1 md:overflow-y-auto p-4 space-y-3 custom-scrollbar">
+          <div className="flex-1 md:overflow-y-auto p-4 space-y-3 pb-24 md:pb-4 md:custom-scrollbar">
             {loading ? (
               <div className="flex justify-center py-20">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
