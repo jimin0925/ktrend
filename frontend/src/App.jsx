@@ -101,7 +101,7 @@ function App() {
       </header>
 
       {/* Main Content - Split View */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 flex flex-col md:grid md:grid-cols-12 gap-6 md:h-[calc(100vh-64px)] md:overflow-hidden">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 flex flex-col min-h-[150vh] md:min-h-0 md:grid md:grid-cols-12 gap-6 md:h-[calc(100vh-64px)] md:overflow-hidden">
 
         {/* Left Sidebar: Trend List */}
         <div className={`

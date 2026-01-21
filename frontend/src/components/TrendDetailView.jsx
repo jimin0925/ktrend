@@ -115,7 +115,7 @@ const TrendDetailView = ({ trend, onBack }) => {
             </div>
 
             {/* Content Scroll Area */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-[500px] md:pb-8">
+            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-[100vh] md:pb-8">
 
                 {/* 1. Analyzed Reason */}
                 <section>
