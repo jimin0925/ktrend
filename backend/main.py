@@ -54,6 +54,7 @@ app.add_middleware(
 )
 
 @app.get("/")
+@app.head("/")
 def read_root():
     return {"message": "Korea Trend API is running"}
 
@@ -68,6 +69,7 @@ async def manual_update():
     return {"status": "success", "message": "Trends updated manually"}
 
 @app.get("/api/trends")
+@app.head("/api/trends")
 async def read_trends(category: str = "all"):
     """
     Get top trends.
