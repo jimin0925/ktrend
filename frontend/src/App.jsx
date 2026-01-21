@@ -67,6 +67,7 @@ function App() {
   }
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     fetchTrends(selectedCategory)
     setShowMobileDetail(false) // Reset to list view when changing category
   }, [selectedCategory])
