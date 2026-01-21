@@ -73,7 +73,7 @@ function App() {
   }, [selectedCategory])
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-white font-sans flex flex-col pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div className="min-h-[100dvh] bg-neutral-950 text-white font-sans flex flex-col pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       {/* Top Navigation */}
       <header className={`bg-neutral-950 border-b border-neutral-900 z-10 shrink-0 pt-[env(safe-area-inset-top)] ${showMobileDetail ? 'hidden md:block' : 'block'}`}>
         <div className="max-w-[1600px] mx-auto px-6 h-14 md:h-16 flex items-center justify-between">
