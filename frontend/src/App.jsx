@@ -101,11 +101,11 @@ function App() {
       </header>
 
       {/* Main Content - Split View */}
-      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 flex flex-col min-h-[150vh] md:min-h-0 md:grid md:grid-cols-12 gap-6 md:h-[calc(100vh-64px)] md:overflow-hidden">
+      <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 md:p-6 flex flex-col min-h-[150vh] md:min-h-0 md:grid md:grid-cols-12 gap-6">
 
         {/* Left Sidebar: Trend List */}
         <div className={`
-            md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm md:h-full
+            md:col-span-4 flex flex-col bg-neutral-900 rounded-2xl border border-neutral-800 shadow-sm
             ${showMobileDetail ? 'hidden md:flex' : 'flex'}
         `}>
           <div className="p-4 border-b border-neutral-800 bg-neutral-900/50 flex justify-between items-end">
@@ -119,7 +119,7 @@ function App() {
             )}
           </div>
 
-          <div className="flex-1 md:overflow-y-auto p-4 space-y-3 pb-24 md:pb-4 md:custom-scrollbar">
+          <div className="flex-1 p-4 space-y-3 pb-24 md:pb-4">
             {loading ? (
               <div className="flex justify-center py-20">
                 <div className="animate-spin rounded-full h-8 w-8 border-2 border-indigo-500 border-t-transparent"></div>
@@ -143,7 +143,7 @@ function App() {
 
         {/* Right Panel: Detail View */}
         <div className={`
-            md:col-span-8 md:h-full md:block z-20
+            md:col-span-8 md:block z-20
             ${showMobileDetail
             ? 'fixed top-0 left-0 w-full h-[100dvh] z-50 bg-neutral-950 flex flex-col'
             : 'hidden'}

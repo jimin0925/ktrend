@@ -89,7 +89,7 @@ const TrendDetailView = ({ trend, onBack }) => {
     }
 
     return (
-        <div className="bg-neutral-900 md:rounded-2xl md:border border-neutral-800 shadow-xl h-full flex flex-col overflow-hidden">
+        <div className="bg-neutral-900 md:rounded-2xl md:border border-neutral-800 shadow-xl h-full md:h-auto flex flex-col md:block overflow-hidden md:overflow-visible">
             {/* Header */}
             <div className="p-6 md:p-8 pb-6 border-b border-neutral-800 bg-neutral-900 flex flex-col relative">
                 {/* Back Button (Mobile Only) */}
@@ -115,7 +115,7 @@ const TrendDetailView = ({ trend, onBack }) => {
             </div>
 
             {/* Content Scroll Area */}
-            <div className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar pb-[100vh] md:pb-8">
+            <div className="flex-1 overflow-y-auto md:overflow-visible p-8 space-y-8 custom-scrollbar pb-[100vh] md:pb-8">
 
                 {/* 1. Analyzed Reason */}
                 <section>
