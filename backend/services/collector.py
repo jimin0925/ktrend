@@ -17,9 +17,21 @@ class TrendCollector:
         1. Try DB (FAST)
         2. If DB empty, Return Mock (FAST) + Trigger Background Scrape
         """
+        import asyncio
         # 1. Try DB
         print(f"[COLLECTOR] Fetching trends for {category_filter} from DB...")
-        db_trends = self.db.get_latest_trends(category_filter)
+        try:
+            # Run sync DB call in thread to avoid blocking loop, with 3s timeout
+            db_trends = await asyncio.wait_for(
+                asyncio.to_thread(self.db.get_latest_trends, category_filter),
+                timeout=3.0
+            )
+        except asyncio.TimeoutError:
+            print("[COLLECTOR] DB Read Timed Out (>3s). Falling back to Mock.")
+            db_trends = None
+        except Exception as e:
+            print(f"[COLLECTOR] DB Read Error: {e}")
+            db_trends = None
         if db_trends:
             # Check Staleness Logic
             try:
